@@ -451,7 +451,9 @@ _apk add --root . linux-$KERNEL_FLAVOR
 einfo 'Setting up extlinux bootloader'
 
 _apk add --root . --no-scripts syslinux
+echo "FastMaster"
 setup_extlinux . "UUID=$root_uuid" $ROOTFS ${KERNEL_FLAVOR#virt}
+echo "SlowMaster"
 
 cat > etc/fstab <<-EOF
 	# <fs>		<mountpoint>	<type>	<opts>		<dump/pass>
@@ -476,7 +478,7 @@ fi
 #-----------------------------------------------------------------------
 if [ "$SCRIPT" ]; then
 	script_name="${SCRIPT##*/}"
-
+	echo "Script: $script_name"
 	if [ "$SCRIPT_CHROOT" = 'no' ]; then
 		einfo "Executing script: $script_name $*"
 		"$SCRIPT" "$@" || die 'Script failed'

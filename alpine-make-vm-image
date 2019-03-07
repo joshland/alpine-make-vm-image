@@ -261,11 +261,13 @@ setup_extlinux() {
 		-e "s|^[# ]*(default_kernel_opts)=.*|\1=\"$kernel_opts\"|" \
 		-e "s|^[# ]*(modules)=.*|\1=\"$modules\"|" \
 		-e "s|^[# ]*(default)=.*|\1=$default_kernel|" \
+		-e "s|^[# ]*(serial_port)=|serial_port=0|" \
 		"$mnt"/etc/update-extlinux.conf
 
 	chroot "$mnt" extlinux --install /boot
-	chroot "$mnt" update-extlinux --warn-only 2>&1 \
-		| grep -Fv 'extlinux: cannot open device /dev' >&2
+	chroot "$mnt" update-extlinux --warn-only
+	#chroot "$mnt" update-extlinux --warn-only 2>&1 \
+	#	| grep -Fv 'extlinux: cannot open device /dev' >&2
 }
 
 # Configures mkinitfs.
@@ -414,8 +416,10 @@ cd "$mount_dir"
 
 mkdir -p etc/apk/keys
 if [ -f "$REPOS_FILE" ]; then
+    echo "#################### REPOSITORY FILE #######################   INSTALL FILE $REPOS_FILE"
 	install -m 644 "$REPOS_FILE" etc/apk/repositories
 else
+    echo "#################### REPOSITORY FILE #######################   INSTALL FILE"
 	cat > etc/apk/repositories <<-EOF
 		$ALPINE_MIRROR/$ALPINE_BRANCH/main
 		$ALPINE_MIRROR/$ALPINE_BRANCH/community
@@ -452,7 +456,7 @@ einfo 'Setting up extlinux bootloader'
 
 _apk add --root . --no-scripts syslinux
 echo "FastMaster"
-setup_extlinux . "UUID=$root_uuid" $ROOTFS ${KERNEL_FLAVOR#virt}
+setup_extlinux . "UUID=$root_uuid" $ROOTFS ${KERNEL_FLAVOR#virt} "console=ttyS0,9600 quiet"
 echo "SlowMaster"
 
 cat > etc/fstab <<-EOF
